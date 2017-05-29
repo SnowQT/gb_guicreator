@@ -1,0 +1,133 @@
+-----------------------
+local rewrite = true --
+-----------------------
+RegisterServerEvent("saveEd")
+AddEventHandler('saveEd', function(edHash, projName)
+	local gt = os.date('*t')
+	local f,err
+	local f1,err1
+	local f2,err2
+	os.execute("mkdir resources\\"..projName)
+	if (rewrite == false) then
+		f,err = io.open("resources\\"..projName.."\\"..projName.."_"..gt['hour'].."_"..gt['min'].."_"..gt['sec'].."_cl.lua","w")
+		if not f then return print(err) end
+		f1,err1 = io.open("resources\\"..projName.."\\"..projName.."_"..gt['hour'].."_"..gt['min'].."_"..gt['sec'].."_sv.lua","w")
+		if not f1 then return print(err1) end
+		f1:close()
+		f2,err2 = io.open("resources\\"..projName.."\\__resource.lua","w")
+		if not f2 then return print(err2) end
+		f2:write("client_script 'mouse.lua'\n")
+		f2:write("client_script '"..projName.."_"..gt['hour'].."_"..gt['min'].."_"..gt['sec'].."_cl.lua'\n")
+		f2:write("server_script '"..projName.."_"..gt['hour'].."_"..gt['min'].."_"..gt['sec'].."_sv.lua'\n")
+		f2:close()
+	else
+		os.remove("resources\\"..projName.."\\"..projName.."_cl.lua")
+		os.remove("resources\\"..projName.."\\"..projName.."_sv.lua")
+		os.execute("mkdir resources\\"..projName)
+		f,err = io.open("resources\\"..projName.."\\"..projName.."_cl.lua","w")
+		if not f then return print(err) end
+		f1,err1 = io.open("resources\\"..projName.."\\"..projName.."_sv.lua","w")
+		if not f1 then return print(err1) end
+		f1:close()
+		f2,err2 = io.open("resources\\"..projName.."\\__resource.lua","w")
+		if not f2 then return print(err2) end
+		f2:write("client_script 'mouse.lua'\n")
+		f2:write("client_script '"..projName.."_cl.lua'\n")
+		f2:write("server_script '"..projName.."_sv.lua'\n")
+		f2:close()
+	end
+	local f4,err4 = io.open("resources\\"..projName.."\\lastsavedui_"..gt['hour'].."_"..gt['min'].."_"..gt['sec']..".lua","w")
+	if not f4 then return print(err4) end
+	f4:write("lastsavedui = {\n")
+	for i = 1,#edHash.id do
+		f4:write("    { id = "..edHash.id[i]..", x = "..edHash.x[i]..", y = "..edHash.y[i]..", x1 = "..edHash.x1[i]..", y1 = "..edHash.y1[i]..", scale = "..edHash.scale[i]..", r = "..edHash.r[i]..", g = "..edHash.g[i]..", b = "..edHash.b[i]..", a = "..edHash.a[i]..", text =  \"".. edHash.text[i].. "\", font = "..edHash.font[i]..", jus = "..edHash.jus[i].." },\n")
+	end
+	f4:write("}\n")
+	local f3,err3 = io.open("resources\\"..projName.."\\mouse.lua","w")
+	if not f3 then return print(err3) end
+	f3:write("mousedrw = 0\n")
+	f3:write("mousex, mousey = 0.0,0.0\n")
+	f3:write("\n")
+	f3:write("function CursorInZone(zonex, zoney, zonex1, zoney1)\n")
+	f3:write("	if mousedrw == 1 and mousex > zonex and mousex < zonex1 and mousey > zoney and mousey < zoney1 then\n")
+	f3:write("		return true\n")
+	f3:write("	elseif mousedrw == 1 and mousex_d > zonex and mousex_d < zonex1 and mousey_d > zoney and mousey_d < zoney1 then\n")
+	f3:write("		return true\n")
+	f3:write("	else\n")
+	f3:write("		return false\n")
+	f3:write("	end\n")
+	f3:write("end\n")
+	f3:write("\n")
+	f3:write("function Cursor(show)\n")
+	f3:write("	if show == 0 then mousedrw = 0\n")
+	f3:write("	elseif show == 1 then mousedrw = 1 end\n")
+	f3:write("end\n")
+	f3:write("\n")
+	f3:write("Citizen.CreateThread(function()\n")
+	f3:write("	while true do\n")
+	f3:write("		Citizen.Wait(0)\n")
+	f3:write("		if mousedrw == 1 then\n")
+	f3:write("			mousex = GetControlNormal(2,239)\n")
+	f3:write("			mousey = GetControlNormal(2,240)\n")
+	f3:write("			mousex_d = GetDisabledControlNormal(2,239)\n")
+	f3:write("			mousey_d = GetDisabledControlNormal(2,240)\n")
+	f3:write("			ShowCursorThisFrame()\n")
+	f3:write("		end\n")
+	f3:write("	end\n")
+	f3:write("end)\n")
+	f3:close()
+	f:write("local showmenu = false\n")
+	f:write("\n")
+	f:write("Citizen.CreateThread(function()\n")
+	f:write("	while true do\n")
+	f:write("		Citizen.Wait(0)\n")
+	f:write("		if IsControlJustPressed(1, 51) and (showmenu == false) then -- E\n")
+	f:write("			showmenu = true\n")
+	f:write("			Cursor(1)\n")
+	f:write("			SetPlayerControl(PlayerId(), 0, 0)\n")
+	f:write("		elseif IsControlJustPressed(1, 51) and showmenu then \n")
+	f:write("			showmenu = false\n")
+	f:write("		elseif showmenu then\n")
+	for i = 1,#edHash.id do
+		--print(edHash.id[i])
+		if edHash.id[i] == 1 then
+			f:write("			drawAdvText("..edHash.x[i].. ", "..edHash.y[i].. ", "..edHash.x1[i].. ", "..edHash.y1[i].. ", "..edHash.scale[i].. ", \"".. edHash.text[i].. "\", ".. edHash.r[i].. ", "..edHash.g[i].. ", "..edHash.b[i].. ", "..edHash.a[i].. ", "..edHash.font[i].. ", "..edHash.jus[i].. ")\n")
+		elseif edHash.id[i] == 2 then
+			f:write("			DrawRect("..edHash.x[i].. ", "..edHash.y[i].. ", "..edHash.x1[i].. ", "..edHash.y1[i].. ", ".. edHash.r[i].. ", "..edHash.g[i].. ", "..edHash.b[i].. ", "..edHash.a[i].. ")\n")
+			f:write("			if CursorInZone("..(edHash.x[i] - (edHash.x1[i] / 2)).. ", "..(edHash.y[i] - (edHash.y1[i] / 2)).. ", "..(edHash.x[i] + (edHash.x1[i] / 2)).. ", "..(edHash.y[i] + (edHash.y1[i] / 2)).. ") then\n")
+			f:write("				DrawRect("..edHash.x[i].. ", "..edHash.y[i].. ", "..edHash.x1[i].. ", "..edHash.y1[i].. ", 255, 255, 255, 255)\n")
+			f:write("				if IsControlJustPressed(1, 329) or IsDisabledControlJustPressed(1, 329) then -- CLIC\n")
+			f:write("					exitmenu()\n")
+			f:write("					-- DO SOMETHING\n")
+			f:write("				end\n")
+			f:write("			end\n")
+		end
+	end
+	f:write("		end\n")
+	f:write("	end\n")
+	f:write("end)\n")
+	f:write("\n")
+	f:write("function exitmenu()\n")
+	f:write("	Cursor(0)\n")
+	f:write("	SetPlayerControl(PlayerId(), 1, 0)\n")
+	f:write("	showmenu = false\n")
+	f:write("end\n")
+	f:write("\n")
+	f:write("function drawAdvText(x,y ,width,height,scale, text, r,g,b,a, font, jus)\n")
+	f:write("	SetTextFont(font)\n")
+	f:write("	SetTextProportional(0)\n")
+	f:write("	SetTextScale(scale, scale)\n")
+	f:write("	N_0x4e096588b13ffeca(jus)\n")
+	f:write("	SetTextColour(r, g, b, a)\n")
+	f:write("	SetTextDropShadow(0, 0, 0, 0,255)\n")
+	f:write("	SetTextEdge(1, 0, 0, 0, 255)\n")
+	f:write("	SetTextDropShadow()\n")
+	f:write("	SetTextOutline()\n")
+	f:write("	SetTextEntry('STRING')\n")
+	f:write("	AddTextComponentString(text)\n")
+	f:write("	SetTextCentre(true)\n")
+	f:write("	DrawText(x, y - (scale / 20))\n")
+	f:write("end\n")
+	f:close()
+end)
+
